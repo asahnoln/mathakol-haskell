@@ -1,5 +1,6 @@
 import System.Random (randomRIO, randomR, StdGen, getStdGen)
 import Control.Monad (when)
+import Control.Exception (catch, throwIO, AsyncException(UserInterrupt))
 
 data Op a = Minus a | Plus a deriving (Show)
 
@@ -7,9 +8,8 @@ main :: IO ()
 main = do
     first <- getRandomNumber
     print first
-    answer <- getLine
 
-    when (answer /= "s") $ mainLoop first []
+    mainLoop first []
 
 getRandomNumber :: IO Int
 getRandomNumber = randomRIO (1, 9)
@@ -31,9 +31,10 @@ mainLoop s os = do
     print op
     answer <- getLine
 
-    if answer /= "s"
-        then mainLoop s ns
-        else print $ calculate s ns
+    catch (mainLoop s ns)
+          (\e -> if e == UserInterrupt
+                    then print $ calculate s ns
+                    else throwIO e)
 
 calculate :: Int -> [Op Int] -> Int
 calculate = foldr applyOp
