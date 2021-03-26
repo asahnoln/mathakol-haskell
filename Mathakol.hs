@@ -1,4 +1,5 @@
 import System.Random (randomRIO, randomR, StdGen, getStdGen)
+import Control.Monad (when)
 
 data Op a = Minus a | Plus a deriving (Show)
 
@@ -8,9 +9,7 @@ main = do
     print first
     answer <- getLine
 
-    if answer /= "s"
-        then mainLoop first []
-        else return ()
+    when (answer /= "s") $ mainLoop first []
 
 getRandomNumber :: IO Int
 getRandomNumber = randomRIO (1, 9)
@@ -37,9 +36,9 @@ mainLoop s os = do
         else print $ calculate s ns
 
 calculate :: Int -> [Op Int] -> Int
-calculate n os = foldr applyOp n os
+calculate = foldr applyOp
     where
-        applyOp op acc = getOpFunc op $ acc
+        applyOp op acc = getOpFunc op acc
         getOpFunc op = case op of
             Plus x -> (+ x)
             Minus x -> (+ (-x))
